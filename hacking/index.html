@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>System Scan</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    background:black;
+    color:#00ff00;
+    font-family:monospace;
+    overflow:hidden;
+}
+
+canvas{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:-1;
+}
+
+#terminal{padding:15px;}
+
+.line{
+    animation:glitch 0.3s infinite;
+}
+
+@keyframes glitch{
+    0%{transform:translate(0);}
+    25%{transform:translate(-2px,2px);}
+    50%{transform:translate(2px,-2px);}
+    75%{transform:translate(-2px,-2px);}
+    100%{transform:translate(0);}
+}
+
+#progress{
+    width:90%;
+    height:10px;
+    background:#222;
+    margin:20px auto;
+}
+
+#bar{
+    width:0%;
+    height:100%;
+    background:lime;
+}
+
+#percent{
+    text-align:center;
+}
+
+#status{
+    text-align:center;
+    margin-top:10px;
+}
+
+.popup{
+    position:fixed;
+    top:30%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:white;
+    color:black;
+    padding:20px;
+    border-radius:10px;
+    display:none;
+    text-align:center;
+}
+
+button{padding:10px;margin-top:10px;}
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div id="terminal"></div>
+
+<div id="progress"><div id="bar"></div></div>
+<div id="percent">0%</div>
+<div id="status">Starting...</div>
+
+<div class="popup" id="popup">
+    <p>Allow camera access?</p>
+    <button onclick="closePopup()">Allow</button>
+</div>
+
+<audio id="sound" loop>
+<source src="https://www.soundjay.com/button/beep-07.mp3">
+</audio>
+
+<script>
+
+// 🔊 SOUND (click pe chalega 100%)
+document.body.addEventListener("click",()=>{
+    document.getElementById("sound").play();
+});
+
+// 📳 vibration
+if(navigator.vibrate){
+    navigator.vibrate([200,100,200]);
+}
+
+// 🎬 MATRIX EFFECT
+let canvas=document.getElementById("matrix");
+let ctx=canvas.getContext("2d");
+
+canvas.height=window.innerHeight;
+canvas.width=window.innerWidth;
+
+let letters="01ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+let fontSize=14;
+let columns=canvas.width/fontSize;
+let drops=[];
+
+for(let i=0;i<columns;i++) drops[i]=1;
+
+function draw(){
+    ctx.fillStyle="rgba(0,0,0,0.05)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle="#0f0";
+    ctx.font=fontSize+"px monospace";
+
+    for(let i=0;i<drops.length;i++){
+        let text=letters[Math.floor(Math.random()*letters.length)];
+        ctx.fillText(text,i*fontSize,drops[i]*fontSize);
+
+        if(drops[i]*fontSize>canvas.height && Math.random()>0.975){
+            drops[i]=0;
+        }
+
+        drops[i]++;
+    }
+}
+setInterval(draw,33);
+
+// ⌨️ typing
+let lines=[
+"Initializing system...",
+"Connecting...",
+"Scanning device...",
+"Accessing data...",
+"Decrypting files...",
+"Finalizing..."
+];
+
+let i=0;
+let terminal=document.getElementById("terminal");
+
+function typeLine(){
+    if(i<lines.length){
+        let div=document.createElement("div");
+        div.className="line";
+        div.innerText=lines[i];
+        terminal.appendChild(div);
+        i++;
+        setTimeout(typeLine,600);
+    }
+}
+typeLine();
+
+// 📊 progress
+let width=0;
+let bar=document.getElementById("bar");
+let percent=document.getElementById("percent");
+let status=document.getElementById("status");
+
+let progress=setInterval(()=>{
+    if(width>=100){
+        clearInterval(progress);
+
+        document.getElementById("popup").style.display="block";
+
+        setTimeout(()=>{
+            document.body.innerHTML=
+            "<h1 style='color:white;text-align:center;margin-top:40vh;'>😂 Relax! Ye sirf prank tha</h1>";
+        },5000);
+
+    }else{
+        width++;
+        bar.style.width=width+"%";
+        percent.innerText=width+"%";
+
+        if(width<30) status.innerText="Scanning...";
+        else if(width<60) status.innerText="Accessing...";
+        else if(width<90) status.innerText="Decrypting...";
+        else status.innerText="Finalizing...";
+
+        if(width==50 && navigator.vibrate){
+            navigator.vibrate(300);
+        }
+    }
+},60);
+
+// popup close
+function closePopup(){
+    document.getElementById("popup").style.display="none";
+}
+
+</script>
+
+</body>
+</html>
